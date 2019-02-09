@@ -8,31 +8,33 @@ using MyShop.Core.Models;
 
 namespace MyShop.DataAccess.InMemory
 {
-    class ProductRepository
+   public class ProductRepository
     {
         ObjectCache cache = MemoryCache.Default;
+        //wher retrieving the list of product from DB.it hits to the actionresult and then returns the index view.
+        //Using Cache it will get the the DB once and index view will get the data from Cache many times
         List<Product> products;
 
 
 
         public ProductRepository()
         {
-            products = cache["products"] as List<Product>;
-            if(products!=null)
+            products = cache["products"] as List<Product>; //storing the cache product list in a products variables
+            if(products==null)
             {
-                products = new List<Product>();
+                products = new List<Product>(); //If any product is there then creating list object.
             }
         }
 
 
 
-        public void Commit()
+        public void Commit() 
             {
-            cache["products"] = products;
+            cache["products"] = products; //keeping in cache prod list
             }
 
 
-        public void Insert(Product p)
+        public void Insert(Product p) 
         {
             products.Add(p);
         }
@@ -56,7 +58,7 @@ namespace MyShop.DataAccess.InMemory
         {
             Product product = products.Find(p => p.Id ==Id);
 
-            if (product != null)
+            if (product == null)
             {
                 return product;
             }
@@ -65,7 +67,8 @@ namespace MyShop.DataAccess.InMemory
                 throw new Exception("Product not found!");
             }
         }
-        public IQueryable<Product> Collection()
+        public IQueryable<Product> Collection() 
+        //While querying data from a database, IQueryable executes a "select query" on server-side with all filters.
         {
             return products.AsQueryable();
         }
