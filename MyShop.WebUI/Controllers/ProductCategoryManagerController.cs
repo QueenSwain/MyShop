@@ -14,7 +14,7 @@ namespace MyShop.WebUI.Controllers
         IRepository<ProductCategory> context;
 
         public ProductCategoryManagerController(IRepository<ProductCategory> context)
-        {
+         {
             this.context = context;
         }
 
