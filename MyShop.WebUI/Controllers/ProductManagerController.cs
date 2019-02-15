@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -12,15 +13,15 @@ namespace MyShop.WebUI.Controllers
 {
     public class ProductManagerController : Controller
     {
-        Product context;
-        ProductCategory productCategories;
+        IRepository<Product> context;
+        IRepository<ProductCategory> productCategories;
 
         public ProductManagerController()
         {
 
         }
 
-        public ProductManagerController(Product productContext,ProductCategory productCategoryContext)
+        public ProductManagerController(IRepository<Product> productContext, IRepository<ProductCategory> productCategoryContext)
         {
             context = productContext;
             productCategories = productCategoryContext;
@@ -29,22 +30,26 @@ namespace MyShop.WebUI.Controllers
         // GET: ProductManager
         public ActionResult Index()
         {
-            List<Product> product = context.Collection().ToList();
-            return View(product);
+            
+         
+            List<Product> Product = context.Collection().ToList();
+          
+                return View(Product);
+          
         }
           
         public ActionResult Create()
         {
-            ProductManagerViewModel viewModel= new ProductManagerViewModel();
+            ProductManagerViewModel viewModel = new ProductManagerViewModel(); 
 
-            viewModel.product = new Product();
+            viewModel.Product = new Product();
             viewModel.ProductCategories = productCategories.Collection();
             return View(viewModel);
         }
 
 
         [HttpPost]
-        public ActionResult Create(Product product)
+        public ActionResult Create(Product product, HttpPostedFileBase file)
         {
             if (!ModelState.IsValid)
             {
@@ -52,8 +57,16 @@ namespace MyShop.WebUI.Controllers
             }
             else
             {
+
+                if (file != null)
+                {
+                    product.Image = product.Id + Path.GetExtension(file.FileName);
+                    file.SaveAs(Server.MapPath("//Content//ProductImages//") + product.Image);
+                }
+
                 context.Insert(product);
                 context.Commit();
+
                 return RedirectToAction("Index");
             }
         }
@@ -68,7 +81,7 @@ namespace MyShop.WebUI.Controllers
             else
             {
                 ProductManagerViewModel viewModel = new ProductManagerViewModel();
-                viewModel.product = product;
+                viewModel.Product = product;
                 viewModel.ProductCategories = productCategories.Collection();
                 return View(viewModel);
             }
@@ -76,26 +89,34 @@ namespace MyShop.WebUI.Controllers
 
 
         [HttpPost]
-        public ActionResult Edit(Product product,string Id)
+        public ActionResult Edit(Product product, string Id, HttpPostedFileBase file)
         {
             Product productToEdit = context.Find(Id);
-            if(product==null)
+
+            if (productToEdit == null)
             {
                 return HttpNotFound();
             }
             else
             {
-                if(!ModelState.IsValid)
+                if (!ModelState.IsValid)
                 {
                     return View(product);
                 }
+
+                if (file != null)
+                {
+                    productToEdit.Image = product.Id + Path.GetExtension(file.FileName);
+                    file.SaveAs(Server.MapPath("//Content//ProductImages//") + productToEdit.Image);
+                }
+
                 productToEdit.Category = product.Category;
                 productToEdit.Description = product.Description;
-                productToEdit.Image = product.Image;
                 productToEdit.Name = product.Name;
                 productToEdit.Price = product.Price;
 
                 context.Commit();
+
                 return RedirectToAction("Index");
             }
         }

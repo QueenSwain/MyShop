@@ -1,4 +1,5 @@
 ﻿using MyShop.Core.Models;
+using MyShop.DataAccess.InMemory;
 using MyShop.DataAccess.SQL;
 using System;
 using System.Collections.Generic;
@@ -12,31 +13,27 @@ namespace MyShop.WebUI.Controllers
     public class ProductCategoryManagerController : Controller
     {
 
-        List<ProductCategory> ProductCat;
-       
+        IRepository<ProductCategory> context;
+
 
         // IRepository<ProductCategory> context;
         public ProductCategoryManagerController()
         { }
-        public ProductCategoryManagerController(ProductCategory ProductCategories)
+        public ProductCategoryManagerController(IRepository<ProductCategory> context)
         {
-            this.ProductCategories = ProductCat.ToList();
+            this.context = context;
         }
 
         // GET: ProductCategoryManager
         public ActionResult Index()
         {
-            List<ProductCategory> productCategories = new List<ProductCategory>();
-
-            if (productCategories != null) {
-                productCategories = ProductCat;
-            }
-
+            List<ProductCategory> productCategories = context.Collection().ToList();
             return View(productCategories);
         }
 
         public ActionResult Create()
         {
+
             ProductCategory productCategory = new ProductCategory();
             return View(productCategory);
         }
@@ -45,18 +42,24 @@ namespace MyShop.WebUI.Controllers
         [HttpPost]
         public ActionResult Create(ProductCategory productCategory)
         {
-            //if ( !ModelState.IsValid || context == null ) { return View(productCategory); }
+            if (!ModelState.IsValid)
+            {
+                return View(productCategory);
+            }
+            else
+            {
+                context.Insert(productCategory);
+                context.Commit();
 
-            ProductCat.Insert(productCategory);
-            ProductCat.Commit();
-            return RedirectToAction("Index");
+                return RedirectToAction("Index");
+            };
             
         }
 
         public ActionResult Edit(string Id)
         {
             ProductCategory productCategory = context.Find(Id);
-            if (productCategory != null)
+            if (productCategory == null)
             {
                 return HttpNotFound();
             }
@@ -71,6 +74,7 @@ namespace MyShop.WebUI.Controllers
         public ActionResult Edit(ProductCategory product, string Id)
         {
             ProductCategory productCategoryToEdit = context.Find(Id);
+
             if (productCategoryToEdit == null)
             {
                 return HttpNotFound();
@@ -81,10 +85,11 @@ namespace MyShop.WebUI.Controllers
                 {
                     return View(product);
                 }
+
                 productCategoryToEdit.Category = product.Category;
-               
 
                 context.Commit();
+
                 return RedirectToAction("Index");
             }
         }
