@@ -1,27 +1,37 @@
 ﻿using MyShop.Core.Models;
-using MyShop.DataAccess.InMemory;
+using MyShop.DataAccess.SQL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 
+
 namespace MyShop.WebUI.Controllers
 {
     public class ProductCategoryManagerController : Controller
     {
 
-        IRepository<ProductCategory> context;
+        List<ProductCategory> ProductCat;
+       
 
-        public ProductCategoryManagerController(IRepository<ProductCategory> context)
+        // IRepository<ProductCategory> context;
+        public ProductCategoryManagerController()
+        { }
+        public ProductCategoryManagerController(ProductCategory ProductCategories)
         {
-            this.context = context;
+            this.ProductCategories = ProductCat.ToList();
         }
 
         // GET: ProductCategoryManager
         public ActionResult Index()
         {
-            List<ProductCategory> productCategories = context.Collection().ToList();
+            List<ProductCategory> productCategories = new List<ProductCategory>();
+
+            if (productCategories != null) {
+                productCategories = ProductCat;
+            }
+
             return View(productCategories);
         }
 
@@ -35,22 +45,18 @@ namespace MyShop.WebUI.Controllers
         [HttpPost]
         public ActionResult Create(ProductCategory productCategory)
         {
-            if (!ModelState.IsValid)
-            {
-                return View(productCategory);
-            }
-            else
-            {
-                context.Insert(productCategory);
-                context.Commit();
-                return RedirectToAction("Index");
-            }
+            //if ( !ModelState.IsValid || context == null ) { return View(productCategory); }
+
+            ProductCat.Insert(productCategory);
+            ProductCat.Commit();
+            return RedirectToAction("Index");
+            
         }
 
         public ActionResult Edit(string Id)
         {
             ProductCategory productCategory = context.Find(Id);
-            if (productCategory == null)
+            if (productCategory != null)
             {
                 return HttpNotFound();
             }
