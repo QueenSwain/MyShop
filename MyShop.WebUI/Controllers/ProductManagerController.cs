@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using MyShop.Core.Contracts;
 using MyShop.Core.Models;
 using MyShop.Core.ViewModels;
 using MyShop.DataAccess.InMemory;
@@ -13,15 +14,15 @@ namespace MyShop.WebUI.Controllers
 {
     public class ProductManagerController : Controller
     {
-        IRepository<Product> context;
-        IRepository<ProductCategory> productCategories;
+        SQLRepository<Product> context;
+        SQLRepository<ProductCategory> productCategories;
 
         public ProductManagerController()
         {
 
         }
 
-        public ProductManagerController(IRepository<Product> productContext, IRepository<ProductCategory> productCategoryContext)
+        public ProductManagerController(SQLRepository<Product> productContext, SQLRepository<ProductCategory> productCategoryContext)
         {
             context = productContext;
             productCategories = productCategoryContext;
@@ -30,12 +31,14 @@ namespace MyShop.WebUI.Controllers
         // GET: ProductManager
         public ActionResult Index()
         {
+
+            if (context==null)
+            {
+                return View(new List<Product>());
+            }
+
+            return View(context.Collection().ToList());
             
-         
-            List<Product> Product = context.Collection().ToList();
-          
-                return View(Product);
-          
         }
           
         public ActionResult Create()
@@ -61,7 +64,7 @@ namespace MyShop.WebUI.Controllers
                 if (file != null)
                 {
                     product.Image = product.Id + Path.GetExtension(file.FileName);
-                    file.SaveAs(Server.MapPath("//Content//ProductImages//") + product.Image);
+                    file.SaveAs(Server.MapPath("/Content/ProductImages/") + product.Image);
                 }
 
                 context.Insert(product);

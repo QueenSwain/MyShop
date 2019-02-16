@@ -1,4 +1,5 @@
-﻿using MyShop.Core.Models;
+﻿using MyShop.Core.Contracts;
+using MyShop.Core.Models;
 using MyShop.DataAccess.InMemory;
 using MyShop.DataAccess.SQL;
 using System;
@@ -8,18 +9,18 @@ using System.Web;
 using System.Web.Mvc;
 
 
+
 namespace MyShop.WebUI.Controllers
 {
     public class ProductCategoryManagerController : Controller
     {
 
-        IRepository<ProductCategory> context;
+        SQLRepository<ProductCategory> context;
 
 
-        // IRepository<ProductCategory> context;
         public ProductCategoryManagerController()
         { }
-        public ProductCategoryManagerController(IRepository<ProductCategory> context)
+        public ProductCategoryManagerController(SQLRepository<ProductCategory> context)
         {
             this.context = context;
         }
@@ -27,15 +28,24 @@ namespace MyShop.WebUI.Controllers
         // GET: ProductCategoryManager
         public ActionResult Index()
         {
+            if (context == null)
+            {
+                return View(new List<ProductCategory>());
+            }
             List<ProductCategory> productCategories = context.Collection().ToList();
             return View(productCategories);
-        }
+
+
+    }
 
         public ActionResult Create()
         {
+            if (context == null)
+            {
+                return View(new ProductCategory());
+            }
 
-            ProductCategory productCategory = new ProductCategory();
-            return View(productCategory);
+            return View(context.Collection().ToList());
         }
 
 
@@ -48,6 +58,10 @@ namespace MyShop.WebUI.Controllers
             }
             else
             {
+                if (context == null)
+                {
+                    return View(productCategory);
+                }
                 context.Insert(productCategory);
                 context.Commit();
 

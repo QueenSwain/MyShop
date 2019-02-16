@@ -3,7 +3,7 @@ using System.Data.Entity;
 
 namespace MyShop.DataAccess.SQL
 {
-    class DataContext : DbContext
+   public class DataContext : DbContext
     {
         public DataContext() : base("DefaultConnnection")
         {
